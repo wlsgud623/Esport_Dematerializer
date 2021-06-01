@@ -2,7 +2,7 @@ runtime: python38 # or another supported version
 
 instance_class: F2
 
-entrypoint: gunicorn -b :$PORT main:application
+entrypoint: gunicorn -b :$PORT main:app
 
 env_variables:
   BUCKET_NAME: "example-gcs-bucket"
