@@ -1,9 +1,12 @@
-runtime: python39 # or another supported version
+runtime: python38 # or another supported version
 
 instance_class: F2
 
+entrypoint: gunicorn -b :$PORT main:app
+
 env_variables:
   BUCKET_NAME: "example-gcs-bucket"
+  GOOGLE_CLOUD_PROJECT: "shoes-finder-project"
 
 handlers:
 # Matches requests to /images/... to files in static/images/...
