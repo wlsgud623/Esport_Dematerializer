@@ -29,6 +29,7 @@ urlpatterns = [
    path('Users/<str:uid>/logs',views.User_Logs,name="UsersLog"),
    path('Users/<str:uid>/<str:path>',views.User_Logs_View,name="UsersLogView"),
    path('Users/<str:uid>/<str:path>/Delete',views.User_Logs_Del,name="UsersLogDel"),
+   path('api-json/',views.User_Log_Json,name="UserLogsJson"),
    
 
 

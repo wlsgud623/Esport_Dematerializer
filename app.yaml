@@ -7,6 +7,8 @@ entrypoint: gunicorn -b :$PORT main:app
 env_variables:
   BUCKET_NAME: "example-gcs-bucket"
   GOOGLE_CLOUD_PROJECT: "shoes-finder-project"
+  DJANGO_DEBUG: False
+  
 
 handlers:
 # Matches requests to /images/... to files in static/images/...

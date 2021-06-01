@@ -388,3 +388,37 @@ def User_Logs_Del(request,uid,path):
             return redirect("DataBase:UsersLogView",uid,path)
     else:
         return render(request,"UsersLogsDel.html",{"uid":uid,"path":path})
+def User_Log_Json(request):
+    if request.method == "POST":
+        if request.META['CONTENT_TYPE'] == 'application/json':
+            request_json = json.loads(request.body.decode('utf-8'))
+            Shose = store.collection(u'shose').where(u'name',u'==',request_json[u'shose']).stream()
+            for Shose_data in Shose:
+                Shose_data_load = storebase.Shose_Data_Store.from_dict(Shose_data.to_dict())
+                if Shose_data_load:
+                    break
+            Shose_dic = Shose_data_load.to_dict()
+            username = request_json[u'name']
+            useruid = request_json[u'uid']
+            timezone = datetime.timezone(datetime.timedelta(hours=9))
+            timestamp = datetime.datetime.now(timezone)
+            logs= storebase.User_logs(useruid,username,timestamp,Shose_dic[u'name'],"Read")
+            logs.Log_Add_Store()
+            logsdic = logs.to_dict()
+            return JsonResponse(logsdic)
+        else:
+            Jsons = {
+                u'error':'error',
+            }
+            return JsonResponse(Jsons)
+    else:
+        Jsons = {
+            u'error':'error',
+        }
+        return JsonResponse(Jsons)
+    
+
+
+
+
+
