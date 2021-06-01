@@ -52,6 +52,8 @@ def Shose_Data_View(request, Shosename):
         print(Shosecode)
         return render(request,"ShoseDataView.html",{"Shose":Shose_dic})
     else:
+        print(Shosecode)
+        print(request.COOKIES.get(u'Shosecode'))
         usertoken = au.verify_id_token(request.session[u'uid'],app=appdata)
         useruid = usertoken[u'uid']
         userstore = storebase.Get_User_Store(useruid)
@@ -60,10 +62,8 @@ def Shose_Data_View(request, Shosename):
         timestamp = datetime.datetime.now(timezone)
         #request.encoding = 'utf-8'
         #print(request.encoding)
-        print(request.META)
         logs= storebase.User_logs(useruid,username,timestamp,Shose_dic[u'name'],"Read")
         logs.Log_Add_Store()
-        print(logs.to_dict())
         logsdic = logs.to_dict()
 #        def replace_space(dic):
 #            for key, value in dic.items():
@@ -75,9 +75,8 @@ def Shose_Data_View(request, Shosename):
         logsJson = json.dumps(logsdic,cls=DjangoJSONEncoder,ensure_ascii=False)
         
         #with open("/json/logsJson")
-        print(logsJson)
         response = render(request,"ShoseDataView.html",{"Shose":Shose_dic})
-        response.set_cookie(u'Shosename',Shosecode,600)
+        response.set_cookie(u'Shosecode',Shosecode,6000)
         response['logs'] = logsJson
         return response
     
