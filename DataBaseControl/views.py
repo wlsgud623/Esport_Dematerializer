@@ -48,7 +48,8 @@ def Shose_Data_View(request, Shosename):
     Shosepath = Shose_data.reference.path
     Shosepathlist = Shosepath.split('/')
     Shosecode = Shosepathlist[1]
-    if request.COOKIES.get('Shosecode') == Shosecode:
+    if request.COOKIES.get(u'Shosecode') == Shosecode:
+        print(Shosecode)
         return render(request,"ShoseDataView.html",{"Shose":Shose_dic})
     else:
         usertoken = au.verify_id_token(request.session[u'uid'],app=appdata)
