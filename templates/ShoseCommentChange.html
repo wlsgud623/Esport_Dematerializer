@@ -1,0 +1,42 @@
+{% extends 'AddData.html'%}
+{% block title %}
+{{Shosename}} 후기 수정
+{%endblock%}
+{% if messages %}
+    {%for message in messages%}
+        {{message.tags}}
+        {{message.message}}
+    {% endfor %}
+{% endif %}
+{%block content%}
+<div class="container-fluid">
+    <form action="{%url 'DataBase:ChangeComment' Shosename timestamp %}" method="POST" class="my-3">
+    {% csrf_token %}
+        <div class="row">
+            <label for="Username" class="col-md-1 col-form-label" >유저명</label>
+            <div class="col-md-11">
+                <input type="text" readonly class="form-control-plaintext" id="Username" name="name" value="{{Comment.name}}">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md mb-3">
+                <div class="form-floating">
+                    <textarea class="form-control" id="CommentArea" name="comment" style="height: 100px" >{{Comment.comment}}</textarea>
+                    <label for="CommentArea" class="form-label" name="comment">후기</label>
+                </div>
+            </div>
+        </div>
+        </div class="row">
+            <div class="col-md mb-3">
+                <div class="form-group">
+                    <input type="submit" class="btn btn-primary" value="등록">
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+
+
+
+{%endblock%}

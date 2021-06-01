@@ -1,0 +1,62 @@
+{% if message %}
+<script>
+    alert('{{message}}');
+</script>
+{% endif %}
+{%load static%}
+<!DOCTYPE html>
+<html lang='ko'>
+<head>
+    <meta charset='utf-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel="stylesheet" type="text/css" href="{% static 'bootstrap.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'ex.css' %}">
+    <title>SignUp</title>
+</head>
+<body>
+    <div class="container-fluid">
+        <form action="{% url 'SAccount:SignUp' %}" method="POST" class="my-3">
+        {% csrf_token %}
+            <div class="row">
+                <div class="col-xs-6 col-md-3">
+                    <div class="form-floating">
+                        <input type="text" class="form-control" placeholder="홍길동" name="name" id="Username">
+                        <label for="Username">이름</label>
+                    </div>
+                </div>
+                <div class="col-xs-6 col-md-3">
+                    <div class="form-floating">
+                        <input type="number" class="form-control" id="Userage" placeholder="25" name="age">
+                        <label for="Userage">나이</label>
+                    </div>
+                </div>
+                <div class="col-xs-6 col-md-3">
+                    <div class="form-floating">
+                        <input type="email" class="form-contorl" id="Useremail" placeholder="example@example.com" name="email">
+                        <label for="Useremail">이메일</label>
+                    </div>
+                </div>
+                <div class = "col-xs-6 col-md-3">
+                    <div class="form-floating">
+                        <select class="form-select" id="UserGender" name="gender">
+                            <option selected value="">아무성별<option>
+                            <option value="male">남자</option>
+                            <option value="female">여자</option>
+                            <option value="other">기타</option>
+                        </select>
+                        <label for="UserGender">성별</label>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-floating">
+                    <input type="password" class="form-control" id="Userpassword" placeholder="PassW0rd" name="password">
+                    <label for="Userpassword">비밀번호</label>
+                </div>
+            </div>
+
+            <input type="submit" class="btn btn-primary" value="회원가입">
+        </form>
+    </div>
+</body>
+</html>

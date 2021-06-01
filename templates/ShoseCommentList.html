@@ -1,0 +1,41 @@
+{%extends 'DataBaseView.html'%}
+{%block title%}{{Shosename}}후기{%endblock%}
+{%block content%}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="page-header">
+                    <h1> {{Shosename}} 후기 목록 </h1>
+                </div>
+                <table class="table table-bordered table-striped table-hover">
+                <thead>
+                    <tr class="table-primary">
+                        <th scope="col">#</th>
+                        <th scope="col">이름</th>
+                        <th scope="col">시간</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {%if Commentlist %}
+                    {%for Comment in Commentlist%}
+                        <tr onclick="location.href='{% url 'DataBase:ShoseCommentView' Shosename Comment.path %}'">
+                            <th scope="row"> {{ forloop.counter }}</th>
+                            <td> {{ Comment.name }} </td>
+                            <td> {{ Comment.timestamp}} </td>
+
+                        </tr>
+                    {%endfor%}
+                {% endif %}
+                </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="row">
+            <div class="btn-group" role="group" aria-label="button list">
+
+                <a class="btn btn-primary" href="{% url "DataBase:ShoseData" Shosename %}" aria-label="list">돌아가기</a>
+                <a class="btn btn-primary" href="{% url "DataBase:AddComment" Shosename %}" aria-label="CommentAdd">추가</a>
+
+        </div>
+    </div>
+{%endblock%}

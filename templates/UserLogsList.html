@@ -1,0 +1,41 @@
+{%extends 'DataBaseView.html'%}
+{%block title%}로그{%endblock%}
+{%block content%}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="page-header">
+                    <h1> 로그정보 </h1>
+                </div>
+                <table class="table table-bordered table-striped table-hover">
+                <thead>
+                    <tr class="table-primary">
+                        <th scope="col">#</th>
+                        <th scope="col">날짜</th>
+                        <th scope="col">이름</th>
+                        <th scope="col">uid</th>
+                        <th scope="col">신발</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {%for LogsList in Logs %}
+                        <tr onclick="location.href='{% url 'DataBase:UsersLogView' LogsList.uid LogsList.path %}'">
+                            <th scope="row"> {{ forloop.counter }}</th>
+                            <td> {{ LogsList.timeStamp }} </td>
+                            <td> {{ LogsList.user }} </td>
+                            <td> {{ LogsList.uid}} </td>
+                            <td> {{ LogsList.shoses}} </td>
+                        </tr>
+                    {%endfor%}
+                </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="row">
+            <div class="btn-group" role="group" aria-label="button list">
+
+                <a class="btn btn-primary" href="{% url "DataBase:UsersView" uid %}" aria-label="list">돌아가기</a>
+
+        </div>
+    </div>
+{%endblock%}

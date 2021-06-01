@@ -1,0 +1,62 @@
+{% extends 'AddData.html'%}
+{% block title %}
+{{User.name}} 수정
+{%endblock%}
+{%block content%}
+<div class="container-fluid">
+    <form action="{%url 'DataBase:UsersChange' uid %}" method="POST" class="my-3">
+    {% csrf_token %}
+        <div class="row">
+            <div class="col-md mb-3">
+                <div class="form-floating">
+                    <input type="text" class="form-controrl" id="Username" name="name" value="{{User.name}}">
+                    <label for="Username" class="col-md-1 col-form-label" >유저명</label>
+                </div>
+            </div>
+            <div class="col-md mb-3">
+                <div class="form-floating">
+                    <input type="email" class="form-control" id="Useremail" name="email">{{User.email}}</input>
+                    <label for="Useremail" class="form-label">이메일</label>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md mb-3">
+                <div class="form-floating">
+                    <input type="number" class="form-control" id="Userage" name="age">{{User.age}}</input>
+                    <label for="Userage" class="form-label">나이</label>
+                </div>
+            </div>
+            <div class="col-md mb-3">
+                <div class="form-floating">
+                    <select class="form-select" id="UserGender" name="gender">
+                        <option selected>{{user.gender}}</option>
+                        <option value="남자">남자</option>
+                        <option value="여자">여자</option>
+                        <option value="기타">기타</option>
+                    <label for="UserGender" class="form-label">성별</label>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md mb-3">
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="Useradmin" name="admin[]" value="1"{% if user.admin %}checked{% endif %}></input>
+                    <label for="Useradmin" class="form-check-label">admin</label>
+                </div>
+            </div>
+        </div>
+        </div class="row">
+            <div class="col-md mb-3">
+                <div class="form-group">
+                    <input type="submit" class="btn btn-primary" value="등록">
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+
+
+
+{%endblock%}

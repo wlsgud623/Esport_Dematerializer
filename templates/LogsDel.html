@@ -1,0 +1,23 @@
+{% extends 'DelData.html'%}
+{%block title%}로그 삭제{%endblock%}
+{% if messages %}
+    {%for message in messages%}
+        {{message.tags}}
+        {{message.message}}
+    {% endfor %}
+{% endif %}
+{%block content%}
+<div class="container-fluid">
+    <form action="{% url 'DataBase:LogsDelete' path %}" method="POST" class"my-3">
+    {% csrf_token %}
+        <div class="row">
+            <div class="col-md mb-3">
+                <div class="alert alert-danger">정말로 해당 로그를 삭제하시겠습니까?</div>
+                <a href="{% url 'DataBase:LogsView' path %}" class="btn btn-primary">취소</a>
+                <input type="submit" value="삭제" class="btn btn-danger">
+            </div>
+        </div>
+    </form>
+
+</div>
+{%endblock%}

@@ -1,0 +1,36 @@
+{%extends 'DataBaseView.html'%}
+{%block title%}신발{%endblock%}
+{%block content%}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="page-header">
+                    <h1> 신발정보 </h1>
+                </div>
+                <table class="table table-bordered table-striped table-hover">
+                <thead>
+                    <tr class="table-primary">
+                        <th scope="col">#</th>
+                        <th scope="col">이름</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {%for ShoseData in Shose%}
+                        <tr onclick="location.href='{% url 'DataBase:ShoseData' ShoseData.name %}'">
+                            <th scope="row"> {{ forloop.counter }}</th>
+                            <td> {{ ShoseData.name }} </td>
+                        </tr>
+                    {%endfor%}
+                </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="row">
+            <div class="btn-group" role="group" aria-label="button list">
+
+                <a class="btn btn-primary" href="{% url "DataBase:data" %}" aria-label="list">돌아가기</a>
+                <a class="btn btn-primary" href="{% url "DataBase:ShoseAdd" %}" aria-label="ShoseAdd">추가</a>
+
+        </div>
+    </div>
+{%endblock%}

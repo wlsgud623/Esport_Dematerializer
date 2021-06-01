@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+{% load static %}
+{% if message %}
+<script>
+    alert('{{message}}');
+</script>
+{% endif %}
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv = "X-UA-Compatible"content = "IE = edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="{% static 'bootstrap.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'ex.css' %}">
+    <title>회원 탈퇴</title>
+</head>
+<body>
+    <div class="container-fluid">
+        <form action="{%url "SAccount:del" %}" method="POST">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col">
+                    <div class="alert alert-danger">정말로 해당 탈퇴하시겠습니까?</div>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-primary" onclick="location.href='{% url 'SAccount:cancel' %}'" value="아니오"> 
+                        <button type="submit" value="예" class="btn btn-danger">
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

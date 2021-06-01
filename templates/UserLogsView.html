@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+{% extends 'DataBaseView.html' %}
+{% block title%}로그조회{%endblock%}
+{% block content%}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <table class="table table-bordered border-primary table-hover table-striped">
+                    <tr>
+                        <th scope="col">uid</th>
+                        <td>{{Logs.uid}}</td>
+                    <tr>
+                    <tr>
+                        <th scope="col">이름</th>
+                        <td>{{Logs.user}}</td>
+                    <tr>
+                    <tr>
+                        <th scope="col">신발 이름</th>
+                        <td>{{Logs.shoses}}</td>
+                    </tr>
+                    <tr>
+                        <th scope="col">시간</th>
+                        <td>{{Logs.timeStamp}}</td>
+                    </tr>
+                    <tr>
+                        <th scope="col">종류</th>
+                        <td>{{Logs.category}}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div class="row">
+            <div class="btn-group" role="group">
+                <a href="{% url "DataBase:UsersLog" %}" class="btn btn-primary" aria-lebel="List">목록</a>
+                <a href="{% url "DataBase:UsersLogDel" uid path %}" class="btn btn-danger" aria-lebel="delete">삭제</a>
+            </div>
+        </div>
+    </div>
+{%endblock%}

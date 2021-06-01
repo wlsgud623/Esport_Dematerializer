@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+{% extends 'DataBaseView.html' %}
+{% block title%}{{User.name}}조회{%endblock%}
+{% block content%}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <table class="table table-bordered border-primary table-hover table-striped">
+                    <tr>
+                        <th scope="col">uid</th>
+                        <td>{{User.uid}}</td>
+                    <tr>
+                    <tr>
+                        <th scope="col">이름</th>
+                        <td>{{User.name}}</td>
+                    </tr>
+                    <tr>
+                        <th scope="col">email</th>
+                        <td>{{User.email}}</td>
+                    </tr>
+                    <tr>
+                        <th scope="col">나이</th>
+                        <td>{{User.age}}</td>
+                    </tr>
+                    <tr>
+                        <th scope="col">성별</th>
+                        <td>{{User.Gender}}</td>
+                    </tr>
+                    <tr>
+                        <th scope="col">admin</th>
+                        <td>{{User.admin}}</td>
+                    </tr>
+                    <tr>
+                        <th scope="col">기록</th>
+                        <td><a href="{% url "DataBase:"%}"
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div class="row">
+            <div class="btn-group" role="group">
+                <a href="{% url "DataBase:Users" %}" class="btn btn-primary" aria-lebel="List">목록</a>
+                <a href="{% url "DataBase:UsersChange" User.uid %}" class="btn btn-primary" aria-lebel="Change">수정</a>
+                <a href="{% url "DataBase:UsersDelete" User.uid %}" class="btn btn-danger" aria-lebel="delete">삭제</a>
+            </div>
+        </div>
+    </div>
+{%endblock%}

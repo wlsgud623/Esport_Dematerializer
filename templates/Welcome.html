@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="{% static 'bootstrap.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'ex.css' %}">
+    <title>어서오세요</title>
+</head>
+<body>
+{% csrf_token %}
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col">
+                <div class="btn-group form-control">
+                    <button type="button" onclick="location.href='{% url 'SAccount:logout' %}'" class="btn btn-primary">로그아웃</button>
+                    <button type="button" onclick="location.href='{% url 'SAccount:del' %}'" class="btn btn-primary">회원탈퇴</button>
+                    <button type="button" onclick="location.href='{% url 'DataBase:data' %}'" class="btn btn-primary">데이터베이스</button>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                어서오세요 {{e}}님
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

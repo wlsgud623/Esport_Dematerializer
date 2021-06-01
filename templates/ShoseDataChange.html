@@ -1,0 +1,95 @@
+{% extends 'AddData.html' %}
+{% block title %}
+{{Shose.name}}
+{%endblock%}
+{%block content%}
+<div class="container-fluid">
+    <form action="{%url 'DataBase:ShoseDataChange' Shose.name%}" method="POST" class="my-3">
+    {% csrf_token %}
+        <div class="row">
+            <div class="col-md mb-3">
+                <div class="form-floationg">
+                    <input type="text" class="form-control" id="Shosename" name="name" placeholder={{Shose.name}} disabled>
+                    <label for="Shosename" class="form-label" name="name" >신발이름</label>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md mb-3">
+                <div class="form-floating">
+                    <input type="text" class="form-control" id="Shosebrand" name="brand" placeholder={{Shose.brand}}>
+                    <label for="Shosebrand" class="form-label" name="brand">브랜드</label>
+                </div>
+            </div>
+            <div class="col-md mb-3">
+                <div class="form-floating">
+                    <input type="number" class="form-control" id="Shoseprice" name="price" placeholder={{Shose.price}}>
+                    <label for="Shoseprice" class="form-label" name="price">가격</label>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md mb-3">
+                <div class="form-floating">
+                    <textarea class="form-control" id="Shosecolor" name="color" style="height: 100px" placeholder={{Shose.color|join:" "}}></textarea>
+                    <label for="Shosecolor" class="form-label" name="color">색상</label>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md mb-3">
+                <div class="form-group">
+                    <lavel for="Shoseimage" class="form-label">이미지</label>
+                    <input type="file" id="Shoseimage" name="file[]"class="form-control">
+                    <input type="hidden" name="url" id="url", value={{Shose.image}}>
+                    <button type="button" class="btn btn-outline-primary" onclick="uploadimage()">업로드</button>
+                </div>
+            </div>
+        </div>
+        </div class="row">
+            <div class="col-md mb-3">
+                <div class="form-group">
+                    <input type="submit" class="btn btn-primary" value="등록">
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+
+<script src="https://www.gstatic.com/firebasejs/8.5.0/firebase-app.js"></script>
+<script >
+    var firebaseConfig = {
+    apiKey: "AIzaSyBbj2fEGcpTvKkr1j4Rtft5D_VNMx3ljSo",
+    authDomain: "shoes-finder-project.firebaseapp.com",
+    databaseURL: "https://shoes-finder-project-default-rtdb.firebaseio.com",
+    projectId: "shoes-finder-project",
+    storageBucket: "shoes-finder-project.appspot.com",
+    messagingSenderId: "548574407922",
+    appId: "1:548574407922:web:8cfec17eb91e91de28f46b",
+    measurementId: "G-3KG6FLV481"
+    };
+    firebase.initializeApp(firebaseConfig);
+    funcation uploadimage(){
+        var storage = firebase.storage();
+        var files = document.getElementById("Shoseimage").file[0];
+        var names = document.getElementById("Shosename").value;
+        var storageRef = storage.ref();
+        var uploadTask = storageRef.child("Shose_Image/"+names).put(files);
+        uploadTask.on('state_changed', funcation(snapshot)){
+            console.log("업로드 완료");
+        },
+        funcation(error) {
+
+        }
+        funcation(){
+            var downloadURL = uploadTask.snapshot.downloadURL;
+            document.getElementById("url").value = downloadURL;
+            console.log("URL 획득",downloadURL)
+            alert("파일 업로드 성공");
+        }
+    }
+    
+</script>
+
+{%endblock%}

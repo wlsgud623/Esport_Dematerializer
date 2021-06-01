@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+{% extends 'DataBaseView.html'%}
+{%block title%}어서오세요{%endblock%}
+{%block content%}
+    {% csrf_token %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="page-header">
+                    <h1>데이터베이스 목록</h1>
+                    <h2>데이터베이스 목록</h2>
+                </div>
+                <div class="list-group">
+                    <a href="{%url "DataBase:Users" %}" class="list-group-item">유저</a>
+                    <a href="{%url "DataBase:Shose"%}" class="list-group-item">신발</a>
+                    <a href="{%url "DataBase:Logs" %}" class="list-group-item">로그</a>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <a class="btn btn-primary" href="{% url 'Home' %}">돌아가기</a>
+
+        </div>
+    </div>
+    
+    
+{%endblock%}
+
+
+
