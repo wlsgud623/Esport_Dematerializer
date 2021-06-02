@@ -17,7 +17,7 @@ try:
     firebase_admin.delete_app(nowapp)
 except:
     pass
-creddata = cr.Certificate('shoes-finder-project-firebase-adminsdk-o2rqq-536745041e.json')
+creddata = cr.Certificate('shoes-finder-project-firshoes-finder-project-firebase-adminsdk-o2rqq-a710ffd892')
 appdata = firebase_admin.initialize_app(creddata,name='datacontrol')
 store = fs.client(appdata)
 print(appdata.name)
