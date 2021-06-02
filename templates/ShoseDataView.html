@@ -2,23 +2,7 @@
 {% extends 'DataBaseView.html' %}
 {% block title%}{{Shose.name}}{%endblock%}
 {% block content%}
-<script src="https://www.gstatic.com/firebasejs/8.5.0/firebase-app.js"></script>
-<script >
-    var firebaseConfig = {
-    apiKey: "AIzaSyBbj2fEGcpTvKkr1j4Rtft5D_VNMx3ljSo",
-    authDomain: "shoes-finder-project.firebaseapp.com",
-    databaseURL: "https://shoes-finder-project-default-rtdb.firebaseio.com",
-    projectId: "shoes-finder-project",
-    storageBucket: "shoes-finder-project.appspot.com",
-    messagingSenderId: "548574407922",
-    appId: "1:548574407922:web:8cfec17eb91e91de28f46b",
-    measurementId: "G-3KG6FLV481"
-    };
-    firebase.initializeApp(firebaseConfig);
 
-    var storage = firebase.storage();
-
-</script>
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-12">

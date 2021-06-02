@@ -1,3 +1,4 @@
+from _typeshed import NoneType
 from django.shortcuts import render, redirect
 from django.contrib import messages, auth 
 # Create your views here.
@@ -32,6 +33,12 @@ def Shose_Data_Load(request):
     Shose_data =[]
     i = 0
     for Shose_load in Shose:
+        """
+        Shose_load.reference.delete({
+            u'ID':fs.DELETE_FIELD,
+            u'comment':fs.DELETE_FIELD,
+        })
+        """
         Shose_data.append(Shose_load.to_dict())
         #print(Shose_data)
     
@@ -132,44 +139,25 @@ def Shose_del(request, Shosename):
 
 def Shose_Comment_List(request, Shosename):
     timezone = datetime.timezone(datetime.timedelta(hours=9))
-    Shose = store.collection(u'shose').where(u'name',u'==',Shosename).stream()
-    for Shose_data in Shose:
-        Shose_data_load = storebase.Shose_Data_Store.from_dict(Shose_data.to_dict())
-        if Shose_data_load:
-            
-            break
-    ref = Shose_data.reference.path
-    rref=ref.split("/")
-    code = rref[1]
-    Shose_data_comment_list = store.collection(u'shose').document(code).collection(u'Comment').order_by(u'timestamp',direction=fs.Query.DESCENDING).stream()
-    Shose_comment = []
-    for Shose_data_comment in Shose_data_comment_list:
-        Comment_dict = Shose_data_comment.to_dict()
-        try:
-            timestamps = datetime.datetime.strftime(Comment_dict[u'timestamp'],"%Y-%m-%d %H-%M-%f")
-        except:
-            continue
-        Shose_comment_list = Shose_data_comment.to_dict()
-        timeStampZ=Shose_comment_list[u'timestamp']
-        timeStampZ = timeStampZ.astimezone(timezone)
-        Shose_comment_list[u'path'] = datetime.datetime.strftime(timeStampZ,"%Y-%m-%d-%H-%M-%f")
-        Shose_comment.append(Shose_comment_list)
-    return render(request, "ShoseCommentList.html",{"Commentlist":Shose_comment, "Shosename":Shosename})
+    Shose = store.collection(u'comment').where(u'name',u'==',Shosename).order_by(u'timestamp',direction=fs.Query.DESCENDING).stream()
+    Commentlist = []
+    i = 0
+    for Comment in Shose:
+        paths = Comment.reference.path
+        ref = paths.split('/')
+        Commentpath = ref[1]
+        Commentdic = Shose.to_dict()
+        Commentdic[u'path'] = Commentpath
+        Commentdic[u'number'] = i
+        i += 1
+        Commentlist.append(Commentdic)    
+        Commentjson = json.dumps(Commentlist,DjangoJSONEncoder,ensure_ascii=False)
+    return render(request, "ShoseCommentList.html",{"Commentlist":Commentlist, "Shosename":Shosename})
 
-def Shose_Comment_Views(request, Shosename, timestamp):
-    sref = store.collection(u'shose').where(u'name',u'==',Shosename).stream()
-    for ssref in sref:
-        if ssref:
-            break
-    ref = ssref.reference.path
-    rref = ref.split("/")
-    code = rref[1]
-    cref = store.collection(u'shose').document(code).collection(u'Comment').document(timestamp).get()
-    if cref.exists:
-        Comment = storebase.Shose_Comment.from_dict(cref.to_dict())
-        return render(request, "ShoseCommentView.html",{"comment":Comment,"name":Shosename,"timestamp":timestamp})
-    else:
-        return redirect("DataBase:CommentList", Shosename)
+def Shose_Comment_Views(request, Shosename, path):
+    cref = store.collection(u'comment').document(path).get()
+    Comment = storebase.Shose_Comment.from_dict(cref.to_dict())
+    return render(request, "ShoseCommentView.html",{"comment":Comment,"name":Shosename,"path":path})
 
 def Shose_Comment_goto_Add(request,Shose):
     usertoken =au.verify_id_token(request.session[u'uid'],app=appdata)
@@ -186,8 +174,9 @@ def Shose_Comment_Add(request,Shosename):
         CommentTimestamp = datetime.datetime.now(timezone)
         Commentcomment = request.POST.get('comment')
         CommentUid=request.POST.get('uid')
-        Comment = storebase.Shose_Comment(CommentTimestamp,CommentName,CommentUid,Commentcomment)
-        Comment.Add_Comment(Shosename)
+        CommentShose = Shosename
+        Comment = storebase.Shose_Comment(CommentShose,CommentTimestamp,CommentName,CommentUid,Commentcomment)
+        Comment.Add_Comment()
         return redirect("DataBase:CommentList",Shosename)
     else:
         usertoken =au.verify_id_token(request.session[u'uid'],app=appdata)
@@ -215,10 +204,11 @@ def Shose_Comment_Rewrite(request,Shosename,timestamp):
         CommentTimestamp = datetime.datetime.strptime(timestamp,"%Y-%m-%d-%H-%M-%f")
         Commentcomment = request.POST.get('comment')
         CommentRewrite_Timestamp = datetime.datetime.now(timezone)
-        storebase.Shose_Comment.Update_Comment(Shosename,CommentTimestamp,CommentName,Commentcomment,CommentRewrite_Timestamp)
+        CommentUid = request.POST.get('uid')
+        storebase.Shose_Comment.Update_Comment(CommentUid,Shosename,CommentTimestamp,CommentName,Commentcomment,CommentRewrite_Timestamp)
         return redirect("DataBase:ShoseCommentView",Shosename,timestamp)
     else:
-        sref = store.collection(u'shose').where(u'name',u'==',Shosename).stream()
+        sref = store.collection(u'comment').where(u'shose',u'==',Shosename).stream()
         for ssref in sref:
             if ssref:
                 break
@@ -226,12 +216,12 @@ def Shose_Comment_Rewrite(request,Shosename,timestamp):
         ref = ssref.reference.path
         rref = ref.split("/")
         code = rref[1]
-        cref = store.collection(u'shose').document(code).collection(u'Comment').document(timestamp).get()
+        cref = store.collection(u'comment').document(code).get()
         Comment = storebase.Shose_Comment.from_dict(cref.to_dict())
         usertoken =au.verify_id_token(request.session[u'uid'],app=appdata)
         useruid = usertoken[u'uid']
         if useruid == Comment[u'uid']:
-            return render(request,"ShoseCommentChange.html",{"Comment":Comment,"Shosename":Shosename,"timestamp":timestamp})
+            return render(request,"ShoseCommentChange.html",{"Comment":Comment,"Shosename":Shosename,"timestamp":timestamp,"uid":useruid})
         else:
             messages.error(request,"작성자만 수정을 할 수 있습니다.")
             return redirect("DataBase:ShoseCommentView",Shosename,timestamp)
@@ -261,14 +251,14 @@ def Shose_Comment_Del(request,Shosename,timestamp):
         useruid = usertoken[u'uid']
         userstore = storebase.Get_User_Store(useruid)
         uid = userstore[u'uid']
-        sref = store.collection(u'shose').where(u'name',u'==',Shosename).stream()
+        sref = store.collection(u'comment').where(u'shose',u'==',Shosename).stream()
         for ssref in sref:
             if ssref:
                 break
         ref = ssref.reference.path
         rref = ref.split("/")
         code = rref[1]
-        cref = store.collection(u'shose').document(code).collection(u'Comment').document(timestamp).get()
+        cref = store.collection(u'shose').document(code).get()
         Comment = storebase.Shose_Comment.from_dict(cref.to_dict())
         if uid == Comment.uid or usertoken.get(u"admin"):
             storebase.Shose_Comment.Del_Comment(timestamp,Shosename,uid)
@@ -344,7 +334,9 @@ def User_Change(request, uid):
         return redirect("DataBAse:UsersView",uid)
     else:
         uref = storebase.Get_User_Store(uid)
-        return render(request, "UserChange.html",{"User":uref})
+        token = au.verify_id_token(request.session[u'uid'],app=appdata)
+
+        return render(request, "UserChange.html",{"User":uref,"admin":token[u'admin']})
 def User_Del(request,uid):
     token = au.verify_id_token(request.session[u'uid'] ,app=appdata)
     if request.method == "POST":
@@ -364,6 +356,8 @@ def User_Del(request,uid):
 def User_Logs(request,uid):
     sref = store.collection(u'logs').where(u'uid',u'==',uid).order_by(u"timeStamp",direction=fs.Query.DESCENDING).stream()
     LogsList = []
+    if sref == None:
+        return render(request, "UserLogsList.html",{u'Logs':LogsList})
     for logsl in sref:
         fullpath = logsl.reference.path
         fullpath = fullpath.split("/")
@@ -389,8 +383,11 @@ def User_Logs_Del(request,uid,path):
     else:
         return render(request,"UsersLogsDel.html",{"uid":uid,"path":path})
 def User_Log_Json(request):
+    print(request.method)
     if request.method == "POST":
+        print(request.META['CONTENT_TYPE'])
         if request.META['CONTENT_TYPE'] == 'application/json':
+            print(request.body)
             request_json = json.loads(request.body.decode('utf-8'))
             Shose = store.collection(u'shose').where(u'name',u'==',request_json[u'shose']).stream()
             for Shose_data in Shose:
@@ -417,7 +414,6 @@ def User_Log_Json(request):
         }
         return JsonResponse(Jsons)
     
-
 
 
 

@@ -5,6 +5,9 @@ import base64
 from Crypto.Protocol.KDF import scrypt
 import datetime
 from django.contrib import messages
+import json
+from django.core.serializers.json import DjangoJSONEncoder
+
 # Create your models here.
 
 """
@@ -89,7 +92,8 @@ class User_logs(object):
         log_ref.document(path).delete()
 
 class Shose_Comment(object):
-    def __init__(self, timestamp, name, uid, comment):
+    def __init__(self, shose, timestamp, name, uid, comment):
+        self.shose = shose
         self.timestamp = timestamp
         self.name = name
         self.uid = uid
@@ -98,13 +102,14 @@ class Shose_Comment(object):
         self.rewrite_timestamp = timestamp
     @staticmethod
     def from_dict(source):
-        Comment = Shose_Comment(source[u'timestamp'],source[u'name'],source[u'uid'],source[u'comment'])
+        Comment = Shose_Comment(source[u'shose'],source[u'timestamp'],source[u'name'],source[u'uid'],source[u'comment'])
         Comment.rewrite = source[u'rewrite']
         if Comment.rewrite == True:
             Comment.rewrite_timestamp = source[u'rewrite_timestamp']
         return Comment
     def to_dict(self):
         dic = {
+            u'shose':self.shose,
             u'timestamp':self.timestamp,
             u'name':self.name,
             u'uid':self.uid,
@@ -116,6 +121,7 @@ class Shose_Comment(object):
     def __repr__(self):
         return(
             f'User( \
+                shose={self.shose}, \
                 timestamp={self.timestamp}, \
                 name={self.name}, \
                 uid={self.uid}, \
@@ -124,77 +130,76 @@ class Shose_Comment(object):
                 rewrite_timestamp={self.rewrite_timestamp}, \
             )'
         )
-    def Add_Comment(self,shose):
-        storeref = store.collection(u'shose').where(u'name',u'==',shose).stream()
-        for storeshose in storeref:
-            Comment = storeshose
-            if Comment:
-                break
-        ref = Comment.reference.path
-        rref = ref.split("/")
-        shosecode = rref[1]
-        storeref = store.collection(u'shose').document(shosecode).collection(u'Comment')
-        storeref.document(datetime.datetime.strftime(self.timestamp,"%Y-%m-%d-%H-%M-%f")).set(self.to_dict())
+    def Add_Comment(self):
+        storeref = store.collection(u'comment')
+        shosesref = store.collection(u'shose').where(u'name',u'==',self.shose).stream()
+        for shoses in shosesref:
+            tempstr = shoses.reference.path.split('/')
+            break
+        shosepath = tempstr[1]
+        storepath = shosepath + '+' + datetime.datetime.strftime(self.timestamp,"%Y%m%d%H%M") + '+' +self.uid
+        storeref.document(storepath).set(self.to_dict())
         
     def Del_Comment(timestamp,shose,uid):
-        storeref = store.collection(u'shose').where(u'name',u'==',shose).stream()
+        storeref = store.collection(u'comment').where(u'shose',u'==',shose).where(u'timestamp',u'==',timestamp).where(u'uid',u'==',uid).stream()
         for storeshose in storeref:
-            Comment = storeshose
-            if Comment:
-                break
-        ref = Comment.reference.path
-        rref = ref.split("/")
-        shosecode = rref[1]
-        storeref = store.collection(u'shose').document(shosecode).collection(u'Comment').document(timestamp)
-        stores = storeref.get().to_dict()
-        if stores[u'uid'] == uid:
-            storeref.delete()
 
-    def Get_Comment(timestamp, shose):
-        storeref = store.collection(u'shose').where(u'name',u'==',shose).stream()
+            stores = storeshose.reference
+            stores.delete()
+
+    def Get_Comment(timestamp, shose, uid):
+        storeref = store.collection(u'comment').where(u'shose',u'==',shose).where(u'timestamp',u'==',timestamp).where(u'uid',u'==',uid).stream()
         for storeshose in storeref:
             Comment = storeshose
             if Comment:
                 break
-        ref = Comment.reference.path
-        rref = ref.split("/")
-        shosecode = rref[1]
-        storeref = store.collection(u'shose').document(shosecode).collection(u'Comment').document(timestamp)
-        Commentref = storeref.get()
-        CommentGet = Shose_Comment.from_dict(Commentref.to_dict)
+
+        Commentref = Comment
+        CommentGet = Shose_Comment.from_dict(Commentref.to_dict())
         return CommentGet
-    def Update_Comment(self,shose):
-        storeref = store.collection(u'shose').where(u'name',u'==',shose).stream()
+    def Get_Comment(path):
+        storeref = store.collection(u'comment').document(path).get()
+        CommentGet = Shose_Comment.from_dict(storeref.to_dict())
+        return CommentGet
+    def Update_Comment(self,timestamp,shose,uid):
+        storeref = store.collection(u'comment').where(u'shose',u'==',shose).where(u'timestamp',u'==',timestamp).where(u'uid',u'==',uid).stream()
         for storeshose in storeref:
             Comment = storeshose
             if Comment:
                 break
-        ref = Comment.reference.path
-        rref = ref.split("/")
-        shosecode = rref[1]
-        storeref = store.collection(u'shose').document(shosecode).colletcion(u'Comment').document(datetime.datetime.strftime(self.timestamp,"%Y-%m-%d-%H-%M-%f"))
+        ref = Comment.reference
+        storeref = ref
         storeref.update({
             u'comment':self.comment,
             u'rewrite':True,
             u'name':self.name,
             u'rewrite_timestamp':fs.SERVER_TIMESTAMP,
         })
-    def Update_Comment(shose,timestamp,name,comment,rewrite_timestmap):
-        storeref = store.collection(u'shose').where(u'name',u'==',shose).stream()
+    def Update_Comment(uid,shose,timestamp,name,comment,rewrite_timestmap):
+        storeref = store.collection(u'comment').where(u'shose',u'==',shose).where(u'timestamp',u'==',timestamp).where(u'uid',u'==',uid).stream()
         for storeshose in storeref:
             Comment = storeshose
             if Comment:
                 break
-        ref = Comment.reference.path
-        rref = ref.split("/")
-        shosecode = rref[1]
-        storeref = store.collection(u'shose').document(shosecode).colletcion(u'Comment').document(datetime.datetime.strftime(timestamp,"%Y-%m-%d-%H-%M-%f"))
-        storeref.update({
+        ref = Comment.reference
+        ref.update({
             u'comment':comment,
             u'rewrite':True,
             u'name':name,
             u'rewrite_timestamp':rewrite_timestmap,
         })
+    def Shose_show_Comment(shose):
+        storeref = store.collection(u'comment').where(u'shose',u'==',shose).order_by(u'timestamp',direction=fs.Query.DESCENDING).stream()
+        storesdic =dict()
+        i = 0
+        for stores in storeref:
+            tempsdic = stores.to_dict()
+            tempstr = stores.reference.path.split('/')
+            tempsdic[u'path'] = tempstr[1]
+            storesdic[i] = stores.to_dict()
+            i += 1
+        storesJson = json.dumps(storesdic,cls=DjangoJSONEncoder,ensure_ascii=False)
+        return storesJson
 
         
 
@@ -327,9 +332,7 @@ class Shose_Data_Store(object):
         if image:
             self.image = image
         self.rate = 0
-        self.user_count = 0
-        self.user_total = 0.0
-        self.comment_count = 0
+        self.participate = 0
     @staticmethod
     def from_dict(source):
         Shose = Shose_Data_Store(source[u'name'])
@@ -343,12 +346,8 @@ class Shose_Data_Store(object):
             Shose.image = source[u'image']
         if u'rate' in source:
             Shose.rate = source[u'rate']
-        if u'user_count' in source:
-            Shose.user_count = source[u'user_count']
-        if u'user_total' in source:
-            Shose.user_total = source[u'user_total']
-        if u'comment_count' in source:
-            Shose.comment_count = source[u'comment_count']
+        if u'participate' in source:
+            Shose.participate = source[u'participate']
         return Shose
     def to_dict(self):
         sdet = {
@@ -364,12 +363,8 @@ class Shose_Data_Store(object):
             sdet[u'image'] = self.image
         if self.rate:
             sdet[u'rate'] = self.rate
-        if self.user_count:
-            sdet[u'user_count'] = self.user_count
-        if self.user_total:
-            sdet[u'user_total'] = self.user_total
-        if self.comment_count:
-            sdet[u'comment_count'] = self.comment_count
+        if self.participate:
+            sdet[u'paricipate'] = self.participate
         return sdet
     def __repr__(self):
         return (
@@ -379,33 +374,25 @@ class Shose_Data_Store(object):
                 price={self.price}, \
                 color={self.color}, \
                 rate={self.rate}, \
-                image={self.image}, \
+                image={self.image},\
+                participate={self.participate}, \
             )'
         )
     
     def rate_cal(self,rate):
-        self.user_count += 1
-        self.user_total += rate
-        self.rate = self.user_total/self.user_count
+        self.participate += 1
+        self.rate += rate
     def rate_update(self,rate,old_rate):
-        self.user_total -= old_rate
-        self.user_total += rate
-        self.rate = self.user_total/self.user_count
+        self.rate -= old_rate
+        self.rate += rate
         
     def Shose_Add_Store_Self(self, code):
         timestamp = datetime.datetime.now(timezone)
         store.collection(u'shose').document(code).set(self.to_dict)
-        store.collection(u'shose').document(code).collection(u'Comment').document().set(
-            {
-                u'name':'',
-                u'timestamp':timestamp,
-                u'comment':'',
-                u'rewrite':False,
-            }
-        )
     def Shose_Add_Store(code, name, brand=None, price=None, color=None, image=None):
         dic = {
-            u'name':name
+            u'name':name,
+            u'paricipate': 0,
             }
         if brand:
             dic[u'brand'] = brand
@@ -415,17 +402,9 @@ class Shose_Data_Store(object):
             dic[u'color'] = color
         if image:
             dic[u'image'] = image
-        timestamp = datetime.datetime.now(timezone)
+        
         Shose = Shose_Data_Store.from_dict(dic)
         store.collection(u'shose').document(code).set(Shose.to_dict)
-        store.collection(u'shose').document(code).collection(u'Comment').document().set(
-            {
-                u'name':'',
-                u'timestamp':timestamp,
-                u'comment':'',
-                u'rewrite':False,
-            }
-        )
     
     def Shose_Get_Store(name):
         Shose_ref = store.collection(u'shose').where(u'name',u'==',name).stream()
@@ -447,7 +426,7 @@ class Shose_Data_Store(object):
                 return Shose_Del_Limit(ref,size)
         Shose = store.collection(u'shose').where(u'name',u'==',name).stream()
         for Shose_one in Shose:
-            Shose_Del_Limit(Shose_one.collection(u'comment'),10)
+            #Shose_Del_Limit(Shose_one.collection(u'comment'),10)
             Shose_one.delete()
     
     def Shose_Change_Name(self,name):
@@ -460,7 +439,9 @@ class Shose_Data_Store(object):
         self.color = color
     def Shose_Change_image(self,image):
         self.image =image
-    def Shose_Store_Update(name=None, brand=None, price=None, color=None, image=None):
+    def Shose_Change_paricipate(self,paricipate):
+        self.participate = paricipate
+    def Shose_Store_Update(name=None, brand=None, price=None, color=None, image=None, paraicipate=None):
         Shose_ref = store.collection(u'shose').where(u'name',u'==',name).get()
         if not name==None:
             Shose_ref.update({u'name':name})
@@ -472,6 +453,8 @@ class Shose_Data_Store(object):
             Shose_ref.update({u'color':color})
         if not image==None:
             Shose_ref.update({u'image':image})
+        if not paraicipate==None:
+            Shose_ref.update({u'paraicipate':paraicipate})
         """Shose_ref.update(
             {
                 u'rate': self.rate,

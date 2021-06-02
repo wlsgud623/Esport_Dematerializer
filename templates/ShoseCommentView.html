@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 {% extends 'DataBaseView.html' %}
-{% block title%}{{name}}의 후기중 {{comment.name}}의 후기, {{timestamp}} {%endblock%}
+{% block title%}{{name}}의 후기중 {{comment.name}}의 후기, {{comment.timestamp}} {%endblock%}
 {% block content%}
     <div class="container-fluid">
         <div class="row">
@@ -24,8 +24,8 @@
         <div class="row">
             <div class="btn-group" role="group">
                 <a href="{% url "DataBase:CommentList" name %}" class="btn btn-primary" aria-lebel="List">목록</a>
-                <a href="{% url "DataBase:ChangeComment" name timestamp %}" class="btn btn-primary">수정</a>
-                <a href="{% url "DataBase:CommentDelete" name timestamp %}" class="btn btn-danger" aria-lebel="delete">삭제</a>
+                <a href="{% url "DataBase:ChangeComment" name path %}" class="btn btn-primary">수정</a>
+                <a href="{% url "DataBase:CommentDelete" name path %}" class="btn btn-danger" aria-lebel="delete">삭제</a>
                 
             </div>
         </div>

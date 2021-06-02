@@ -63,12 +63,18 @@ def signin(request):
             return render(request,"SignIn.html",{"message":message})
     #print(user_id)
         session_id = user['idToken']
+        print(user)
+        print(session_id)
         request.session['uid'] = str(session_id)
         request.session['email'] = str(email)
         token = auth.verify_id_token(request.session[u'uid'],app=appsign)
-    
+        if token.get(u'admin') != True:
+            auth.set_custom_user_claims(token[u'uid'],{u'admin':False})
         uid = token[u'uid']
+        print(token.get(u'admin'))
+        print(token)
         users = auth.get_user(uid)
+
     #if uid == "7Q7Mcmqpy5Vizg0M5FRArj5GPwo2":
     #    auth.set_custom_user_claims(uid,{'admin':True})
 
