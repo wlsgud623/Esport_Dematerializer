@@ -10,7 +10,7 @@
 {% endif %}
 {%block content%}
 <div class="container-fluid">
-    <form action="{%url 'DataBase:ChangeComment' Shosename timestamp %}" method="POST" class="my-3">
+    <form action="{%url 'DataBase:ChangeComment' Shosename path %}" method="POST" class="my-3">
     {% csrf_token %}
         <div class="row">
             <label for="Username" class="col-md-1 col-form-label" >유저명</label>

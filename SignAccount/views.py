@@ -32,7 +32,7 @@ try:
     firebase_admin.delete_app(nowapp)
 except:
     pass
-credsign = credentials.Certificate('shoes-finder-project-firshoes-finder-project-firebase-adminsdk-o2rqq-a710ffd892')
+credsign = credentials.Certificate('shoes-finder-project-firebase-adminsdk-o2rqq-a710ffd892.json')
 appsign = firebase_admin.initialize_app(credsign,name='sign')
 store = firestore.client(appsign)
 print(appsign.name)

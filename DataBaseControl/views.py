@@ -1,4 +1,4 @@
-from _typeshed import NoneType
+
 from django.shortcuts import render, redirect
 from django.contrib import messages, auth 
 # Create your views here.
@@ -11,13 +11,14 @@ import json
 from django.core.serializers.json import DjangoJSONEncoder
 import chardet
 from django.http import JsonResponse
+from google.cloud import firestore
 
 try:
     nowapp = firebase_admin.get_app(name='datacontrol')
     firebase_admin.delete_app(nowapp)
 except:
     pass
-creddata = cr.Certificate('shoes-finder-project-firshoes-finder-project-firebase-adminsdk-o2rqq-a710ffd892')
+creddata = cr.Certificate('shoes-finder-project-firebase-adminsdk-o2rqq-a710ffd892.json')
 appdata = firebase_admin.initialize_app(creddata,name='datacontrol')
 store = fs.client(appdata)
 print(appdata.name)
@@ -51,6 +52,8 @@ def Shose_Data_View(request, Shosename):
         Shose_data_load = storebase.Shose_Data_Store.from_dict(Shose_data.to_dict())
         if Shose_data_load:
             break
+    print(Shosename)
+    print(Shose_data_load)
     Shose_dic = Shose_data_load.to_dict()
     Shosepath = Shose_data.reference.path
     Shosepathlist = Shosepath.split('/')
@@ -139,20 +142,33 @@ def Shose_del(request, Shosename):
 
 def Shose_Comment_List(request, Shosename):
     timezone = datetime.timezone(datetime.timedelta(hours=9))
-    Shose = store.collection(u'comment').where(u'name',u'==',Shosename).order_by(u'timestamp',direction=fs.Query.DESCENDING).stream()
+    print(Shosename)
+    Shoseref = store.collection(u'comment').where(u'shose',u'==',Shosename)
+    Shosestore = Shoseref.order_by(u'timestamp',direction=firestore.Query.DESCENDING).get()
+    
     Commentlist = []
     i = 0
-    for Comment in Shose:
-        paths = Comment.reference.path
-        ref = paths.split('/')
-        Commentpath = ref[1]
-        Commentdic = Shose.to_dict()
-        Commentdic[u'path'] = Commentpath
-        Commentdic[u'number'] = i
-        i += 1
-        Commentlist.append(Commentdic)    
-        Commentjson = json.dumps(Commentlist,DjangoJSONEncoder,ensure_ascii=False)
-    return render(request, "ShoseCommentList.html",{"Commentlist":Commentlist, "Shosename":Shosename})
+    print(Shosestore)
+    print(type(Shosestore))
+    try:
+        for Comment in Shosestore:
+            if Comment.exists :
+                paths = Comment.reference.path
+                ref = paths.split('/')
+                Commentpath = ref[1]
+                Commentdic = Comment.to_dict()
+                Commentdic[u'path'] = Commentpath
+                Commentdic[u'number'] = i
+                i += 1
+                Commentlist.append(Commentdic)
+            else:
+                print("error")
+                break
+            Commentjson = json.dumps(Commentlist,DjangoJSONEncoder,ensure_ascii=False)
+        return render(request, "ShoseCommentList.html",{"Commentlist":Commentlist, "Shosename":Shosename})
+    except:
+        print("error")
+        return render(request, "ShoseCommentList.html",{"Commentlist":Commentlist, "Shosename":Shosename})
 
 def Shose_Comment_Views(request, Shosename, path):
     cref = store.collection(u'comment').document(path).get()
@@ -186,7 +202,7 @@ def Shose_Comment_Add(request,Shosename):
         print(username)
         return render(request, "ShoseCommentAdd.html",{"username":username,"Shosename":Shosename,"uid":useruid})
 def Shose_Comment_goto_Rewrite(request,Shosename,timestamp):
-    sref = store.collection(u'shose').where(u'name',u'==',Shosename).stream()
+    sref = store.collection(u'shose').where(u'shose',u'==',Shosename).stream()
     for ssref in sref:
         if ssref:
             break
@@ -197,34 +213,31 @@ def Shose_Comment_goto_Rewrite(request,Shosename,timestamp):
     Comment = storebase.Shose_Comment.from_dict(cref.to_dict())
     return render(request,"ShoseCommentChange.html",{"Comment":Comment,"Shosename":Shosename,"timestamp":timestamp})
 
-def Shose_Comment_Rewrite(request,Shosename,timestamp):
+def Shose_Comment_Rewrite(request,Shosename,path):
     if request.method == 'POST':
+        cref = store.collection(u'comment').document(path).get()
+        Commentref = cref.to_dict()
         timezone = datetime.timezone(datetime.timedelta(hours=9))
         CommentName = request.POST.get('name')
-        CommentTimestamp = datetime.datetime.strptime(timestamp,"%Y-%m-%d-%H-%M-%f")
+        print(Commentref.get(u'timestamp'))
+        print(datetime.datetime.now())
+        print(datetime.datetime.now(timezone))
+        CommentTimestamp = Commentref.get(u'timestamp').astimezone(timezone)
         Commentcomment = request.POST.get('comment')
         CommentRewrite_Timestamp = datetime.datetime.now(timezone)
         CommentUid = request.POST.get('uid')
         storebase.Shose_Comment.Update_Comment(CommentUid,Shosename,CommentTimestamp,CommentName,Commentcomment,CommentRewrite_Timestamp)
-        return redirect("DataBase:ShoseCommentView",Shosename,timestamp)
+        return redirect("DataBase:ShoseCommentView",Shosename,path)
     else:
-        sref = store.collection(u'comment').where(u'shose',u'==',Shosename).stream()
-        for ssref in sref:
-            if ssref:
-                break
-        
-        ref = ssref.reference.path
-        rref = ref.split("/")
-        code = rref[1]
-        cref = store.collection(u'comment').document(code).get()
+        cref = store.collection(u'comment').document(path).get()
         Comment = storebase.Shose_Comment.from_dict(cref.to_dict())
         usertoken =au.verify_id_token(request.session[u'uid'],app=appdata)
         useruid = usertoken[u'uid']
-        if useruid == Comment[u'uid']:
-            return render(request,"ShoseCommentChange.html",{"Comment":Comment,"Shosename":Shosename,"timestamp":timestamp,"uid":useruid})
+        if useruid == Comment.uid:
+            return render(request,"ShoseCommentChange.html",{"Comment":Comment,"Shosename":Shosename,"path":path,"uid":useruid})
         else:
             messages.error(request,"작성자만 수정을 할 수 있습니다.")
-            return redirect("DataBase:ShoseCommentView",Shosename,timestamp)
+            return redirect("DataBase:ShoseCommentView",Shosename,path)
 
 
 def Shose_Comment_goto_Del(request,Shosename,timestamp):
@@ -232,7 +245,7 @@ def Shose_Comment_goto_Del(request,Shosename,timestamp):
     useruid = usertoken[u'uid']
     userstore = storebase.Get_User_Store(useruid)
     uid = userstore[u'uid']
-    sref = store.collection(u'shose').where(u'name',u'==',Shosename).stream()
+    sref = store.collection(u'shose').where(u'shose',u'==',Shosename).stream()
     for ssref in sref:
         if ssref:
             break
@@ -245,32 +258,25 @@ def Shose_Comment_goto_Del(request,Shosename,timestamp):
         messages.error(request,"작성자와 운영자만 삭제를 할 수 있습니다.")
         return redirect("DataBase:ShoseCommentView",Shosename,timestamp)
     
-def Shose_Comment_Del(request,Shosename,timestamp):
+def Shose_Comment_Del(request,Shosename,path):
     if request.method == "POST":
         usertoken =au.verify_id_token(request.session[u'uid'],app=appdata)
         useruid = usertoken[u'uid']
         userstore = storebase.Get_User_Store(useruid)
         uid = userstore[u'uid']
-        sref = store.collection(u'comment').where(u'shose',u'==',Shosename).stream()
-        for ssref in sref:
-            if ssref:
-                break
-        ref = ssref.reference.path
-        rref = ref.split("/")
-        code = rref[1]
-        cref = store.collection(u'shose').document(code).get()
+        cref = store.collection(u'shose').document(path).get()
         Comment = storebase.Shose_Comment.from_dict(cref.to_dict())
         if uid == Comment.uid or usertoken.get(u"admin"):
-            storebase.Shose_Comment.Del_Comment(timestamp,Shosename,uid)
+            storebase.Shose_Comment.Del_Comment(Comment.timestamp,Shosename,uid)
             return redirect("DataBase:CommentList",Shosename)
         else:
             messages.error(request,"작성자와 운영자만 삭제를 할 수 있습니다.")
-            return redirect("DataBase:ShoseCommentView",Shosename,timestamp)
+            return redirect("DataBase:ShoseCommentView",Shosename,path)
     else:
-        return render(request, "ShoseCommentDel.html",{"name":Shosename,"timestamp":timestamp})
+        return render(request, "ShoseCommentDel.html",{"name":Shosename,"path":path})
 
 def Logs_List(request):
-    sref = store.collection(u'logs').order_by(u"timeStamp",direction=fs.Query.DESCENDING).stream()
+    sref = store.collection(u'logs').order_by(u'timeStamp',direction=firestore.Query.DESCENDING).stream()
     LogsList = []
     timezone = datetime.timezone(datetime.timedelta(hours=9))
     for logsl in sref:
@@ -354,7 +360,7 @@ def User_Del(request,uid):
     else:
         return render(request, "UserDelete.html",{"uid":uid})
 def User_Logs(request,uid):
-    sref = store.collection(u'logs').where(u'uid',u'==',uid).order_by(u"timeStamp",direction=fs.Query.DESCENDING).stream()
+    sref = store.collection(u'logs').where(u'uid',u'==',uid).order_by(u"timeStamp",direction=firestore.Query.DESCENDING).stream()
     LogsList = []
     if sref == None:
         return render(request, "UserLogsList.html",{u'Logs':LogsList})

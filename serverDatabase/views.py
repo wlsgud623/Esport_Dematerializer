@@ -2,7 +2,7 @@ from functools import update_wrapper
 from django.shortcuts import render
 import firebase_admin
 from firebase_admin import auth, firestore, credentials
-credsign = credentials.Certificate('shoes-finder-project-firshoes-finder-project-firebase-adminsdk-o2rqq-a710ffd892')
+credsign = credentials.Certificate('shoes-finder-project-firebase-adminsdk-o2rqq-a710ffd892.json')
 appsign = firebase_admin.initialize_app(credsign)
 def homePage(request):
     print(request.session.__dict__)
